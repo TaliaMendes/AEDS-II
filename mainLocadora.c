@@ -8,6 +8,7 @@ int main(){
     TCliente *cliente;
     TFuncionario *funcionario;
     TDvd *dvd;
+    TLocadora *locadora;
 
 
     if ((arqClientes = fopen("clientes.dat", "w+b")) == NULL) {
@@ -29,12 +30,9 @@ int main(){
     imprimirBaseCliente(arqClientes);
     criarBaseDvd(arqDvds, 20);
     printf("\n");
-    printf("\n ============================================= \n");
 
-    alugaDvd(arqClientes, arqDvds, arqLocadora);
+   alugaDvd(arqClientes, arqDvds, arqLocadora);
 
     printf("\n");
-    printf("\n ===================Imprimindo DVD's alugados========================== \n");
-    imprimirDvdsAlugados(arqDvds,arqLocadora);
-
+    imprimirDvdAlugado(arqLocadora, arqDvds, arqClientes);
 }
