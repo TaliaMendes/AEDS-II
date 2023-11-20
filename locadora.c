@@ -53,6 +53,50 @@ TCliente *lerCliente(FILE *arq){ // ler dados do arquivo na posiçao atual do cu
 
 }
 
+void imprimeCliente(TCliente *cliente){
+    printf("\n CLIENTE \n");
+    printf("\nID do cliente: ");
+    printf("%d", cliente->idC);
+    printf("\nNome do Cliente: ");
+    printf("%s", cliente->nomeC);
+    printf("\nData de nascimento do cliente: ");
+    printf("%s", cliente->dataNascimentoC);
+    printf("\nCPF do cliente: ");
+    printf("%s", cliente->cpfC);
+    printf("\nTelefone do cliente: ");
+    printf("%s", cliente->telefoneC);
+    printf("\n");
+}
+
+void criarBaseCliente(FILE *arq, int tam){
+char nomeCliente[50];
+int vet[tam];
+    TCliente *cliente;
+
+    for(int i=0;i<tam;i++)
+        vet[i] = i+1;
+
+    shuffle(vet,tam,(tam*10)/100); // embaralhar
+
+    for (int i=0;i<tam;i++){
+        sprintf(nomeCliente, "Cliente %d " ,i+1);
+        cliente = criarCliente(vet[i], nomeCliente, "09/03/200", "15896375214","23254153");
+        salvarCliente(cliente, arq);
+    }
+
+    free(cliente);
+}
+
+void imprimirBaseCliente(FILE *arq){
+rewind(arq);
+    TCliente *cliente;
+
+    while ((cliente = lerCliente(arq)) != NULL)
+        imprimeCliente(cliente);
+
+    free(cliente);
+}
+
 TCliente *buscaSequencialCliente(int chave, FILE *arq, const char *nomeArquivoLog) {  //Busca sequencial para o arquivo de clientes
     TCliente *cliente;
     int achou = 0;
@@ -97,49 +141,40 @@ TCliente *buscaSequencialCliente(int chave, FILE *arq, const char *nomeArquivoLo
     return NULL;
 }
 
+TCliente *buscabinariaCliente(int chave, FILE *arqCliente){
 
-void imprimeCliente(TCliente *cliente){
-    printf("\n CLIENTE \n");
-    printf("\nID do cliente: ");
-    printf("%d", cliente->idC);
-    printf("\nNome do Cliente: ");
-    printf("%s", cliente->nomeC);
-    printf("\nData de nascimento do cliente: ");
-    printf("%s", cliente->dataNascimentoC);
-    printf("\nCPF do cliente: ");
-    printf("%s", cliente->cpfC);
-    printf("\nTelefone do cliente: ");
-    printf("%s", cliente->telefoneC);
-    printf("\n");
-}
+    long inicio, meio, fim;
+    TCliente *cliente = NULL;
+    int achou = 0;
 
-void criarBaseCliente(FILE *arq, int tam){
-char nomeCliente[50];
-int vet[tam];
-    TCliente *cliente;
+    inicio = 0;
+    fseek(arqCliente, 0, SEEK_END);
+    fim = (ftell(arqCliente)/tamanhoRegistroLocadora()) - 1;
 
-    for(int i=0;i<tam;i++)
-        vet[i] = i+1;
+    while(inicio <= fim && !achou) {
+        meio = (inicio + fim) / 2;
 
-    shuffle(vet,tam,(tam*10)/100); // embaralhar
+        fseek(arqCliente, meio * tamanhoRegistroLocadora(), SEEK_SET);
+        cliente = lerCliente(arqCliente);
 
-    for (int i=0;i<tam;i++){
-        sprintf(nomeCliente, "Cliente %d " ,i+1);
-        cliente = criarCliente(vet[i], nomeCliente, "09/03/200", "15896375214","23254153");
-        salvarCliente(cliente, arq);
+        if(cliente->idC == chave) {
+            achou = 1;
+            break;
+        } else if(cliente->idC < chave) {
+            inicio = meio + 1;
+        } else {
+            fim = meio - 1;
+        }
+        free(cliente);
     }
 
-    free(cliente);
-}
+    if(achou) {
+        return cliente;
+    } else {
+        printf("Cliente nao encontrado\n");
+        return NULL;
+    }
 
-void imprimirBaseCliente(FILE *arq){
-rewind(arq);
-    TCliente *cliente;
-
-    while ((cliente = lerCliente(arq)) != NULL)
-        imprimeCliente(cliente);
-
-    free(cliente);
 }
 
 //Dvd
@@ -257,6 +292,42 @@ TDvd *buscaSequencialDvds(int chave, FILE *arq, const char *nomeArquivoLog) {
     }
 
     return NULL;
+}
+
+TDvd *buscabinariaDvds(int chave, FILE *arqDvds){
+
+    long inicio, meio, fim;
+    TDvd *dvd = NULL;
+    int achou = 0;
+
+    inicio = 0;
+    fseek(arqDvds, 0, SEEK_END);
+    fim = (ftell(arqDvds)/tamanhoRegistroLocadora()) - 1;
+
+    while(inicio <= fim && !achou) {
+        meio = (inicio + fim) / 2;
+
+        fseek(arqDvds, meio * tamanhoRegistroLocadora(), SEEK_SET);
+        dvd = lerDvd(arqDvds);
+
+        if(dvd->id_dvd == chave) {
+            achou = 1;
+            break;
+        } else if(dvd->id_dvd < chave) {
+            inicio = meio + 1;
+        } else {
+            fim = meio - 1;
+        }
+        free(dvd);
+    }
+
+    if(achou) {
+        return dvd;
+    } else {
+        printf("Dvd nao encontrado\n");
+        return NULL;
+    }
+
 }
 
 //Locadora
@@ -396,6 +467,7 @@ void alugaDvd(FILE *arqClientes, FILE *arqDvds, FILE *arqLocadora) {
     scanf("%d", &idCliente);
 
     cliente = buscaSequencialCliente(idCliente, arqClientes, "clientes-log.txt");
+    //cliente = buscabinariaCliente(idCliente, arqClientes, "clientesBinaria-log.txt");
 
     dvdsDisponiveis(arqDvds);
 
@@ -404,7 +476,7 @@ void alugaDvd(FILE *arqClientes, FILE *arqDvds, FILE *arqLocadora) {
     scanf("%d", &idDvd);
 
     dvd = buscaSequencialDvds(idDvd, arqDvds, "buscaDvds-log.txt");
-
+    //dvd = buscabinariaDvds(idDvd, arqDvds, "buscaDvdsBinaria-log.txt");
     if(dvd == NULL){
         printf("Dvd nao encontrado");
         exit(1);
@@ -443,9 +515,11 @@ rewind(arq);
     while ((locadora = lerRegistrosLocadora(arq)) != NULL){
         printf("***************DVD'S ALUGADOS*****************");
         dvd = buscaSequencialDvds(locadora->id_dvd, arqD, "buscaDvds-log.txt");
+        //dvd = buscabinariaDvds(locadora->id_dvd, arqD, "buscaDvdsBinaria-log.txt");
         imprimeDvd(dvd);
 
         cliente = buscaSequencialCliente(locadora->id_cliente, arqC, "clientes-log.txt");
+        //cliente = buscabinariaCliente(locadora->id_cliente, arqC, "clientesBinaria-log.txt");
         imprimeCliente(cliente);
     }
     free(locadora);
@@ -512,6 +586,7 @@ int excluiCliente(int chave, FILE *arqClientes) {
     // Procura o registro pelo Id
     while ((cliente = lerCliente(arqClientes)) != NULL) {
             cliente = buscaSequencialCliente(chave, arqClientes,"clientes-log.txt");
+            //cliente = buscabinariaCliente(idCliente, arqClientes, "clientesBinaria-log.txt");
         if (cliente->idC == chave) {
             encontrado = 1;
             break;

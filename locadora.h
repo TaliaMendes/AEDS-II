@@ -39,14 +39,15 @@ void salvarCliente(TCliente *cliente, FILE *arq);
 
 TCliente *lerCliente(FILE *arq);
 
-TCliente *buscaSequencialCliente(int chave, FILE *arq, const char *nomeArquivoLog);
-
 void imprimeCliente(TCliente *cliente);
 
 void criarBaseCliente(FILE *arq, int tam);
 
 void imprimirBaseCliente(FILE *arq);
 
+TCliente *buscaSequencialCliente(int chave, FILE *arq, const char *nomeArquivoLog);
+
+TCliente *buscabinariaCliente(int chave, FILE *arqCliente);
 
 //Dvd
 TDvd *criarDvd(int id_dvd, char *nome_dvd, char *genero, int emprestimo);
@@ -62,6 +63,8 @@ void criarBaseDvd(FILE *arq, int tam);
 void imprimirBaseDvd(FILE *arq);
 
 TDvd *buscaSequencialDvds(int chave, FILE *arq, const char *nomeArquivoLog);
+
+TDvd *buscabinariaDvds(int chave, FILE *arqDvds);
 
 
 
