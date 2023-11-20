@@ -19,28 +19,28 @@ TCliente *criarCliente(int idC, char *nomeC , char *dataNascimentoC, char *cpfC,
 
     TCliente *cliente = (TCliente *) malloc(sizeof(TCliente));
 
-    if(cliente) memset(cliente, 0, sizeof(cliente)); // memset( lugar que vai guardar a copia, o que vai ser copiado, n� de bytes que recebera a copia);
-        cliente->idC = idC;
+    if(cliente) memset(cliente, 0, sizeof(cliente)); //inicializa espaco de memoria com ZEROS
+        cliente->idC = idC;  //copia os valores para os seus respectivos campos
         strcpy(cliente->nomeC, nomeC);
-        strcpy(cliente->dataNascimentoC, dataNascimentoC); //strcpy copia uma string para outra
+        strcpy(cliente->dataNascimentoC, dataNascimentoC); //strcpy (copia uma string para outra)
         strcpy(cliente->cpfC, cpfC);
         strcpy(cliente->telefoneC, telefoneC);
 
         return cliente;
 }
 
-void salvarCliente(TCliente *cliente, FILE *arq){
-    fwrite(&cliente->idC, sizeof(int), 1, arq);
-    fwrite(cliente->nomeC, sizeof(char), sizeof(cliente->nomeC), arq); //fwrite(onde na memoria esta os dados, tamanho de unidade que vai salvar, total de dados que v�o ser gravados, arquivo onde vai salvar).
+void salvarCliente(TCliente *cliente, FILE *arq){ //Salva os dados na posicao atual do cursor
+    fwrite(&cliente->idC, sizeof(int), 1, arq); //fwrite(Salvar dados no arquivo).
+    fwrite(cliente->nomeC, sizeof(char), sizeof(cliente->nomeC), arq);
     fwrite(cliente->dataNascimentoC, sizeof(char), sizeof(cliente->dataNascimentoC), arq);
     fwrite(cliente->cpfC, sizeof(char), sizeof(cliente->cpfC), arq);
     fwrite(cliente->telefoneC, sizeof(char), sizeof(cliente->telefoneC), arq);
 }
 
-TCliente *lerCliente(FILE *arq){
+TCliente *lerCliente(FILE *arq){ // ler dados do arquivo na posiçao atual do cursor
      TCliente *cliente = (TCliente *) malloc(sizeof(TCliente));
 
-     if (0 >= fread(&cliente->idC, sizeof(int), 1, arq)) {
+     if (0 >= fread(&cliente->idC, sizeof(int), 1, arq)) { // Se o numero de unidades lidas for menor do que 0, retorna null , pois o arquivo esta vazio
         free(cliente);
         return NULL;
     }
@@ -53,25 +53,25 @@ TCliente *lerCliente(FILE *arq){
 
 }
 
-TCliente *buscaSequencial(int chave, FILE *arq, const char *nomeArquivoLog) {
+TCliente *buscaSequencialCliente(int chave, FILE *arq, const char *nomeArquivoLog) {  //Busca sequencial para o arquivo de clientes
     TCliente *cliente;
     int achou = 0;
     clock_t inicio, fim;
     double tempoGasto;
     int contComparacao = 0;
-
-    FILE *logFile = fopen(nomeArquivoLog, "a"); // Abre o arquivo de log em modo de acréscimo
+                                                // o nome do arquivo e passado como parametro
+    FILE *logFile = fopen(nomeArquivoLog, "a"); // Abre o arquivo de log em modo de adicao de novos dados.
     if (logFile == NULL) {
         printf("Erro ao abrir arquivo de log\n");
         return NULL;
     }
 
-    inicio = clock();
-    rewind(arq);
+    inicio = clock(); // inicio da funcao que conta o tempo para a busca da chave desejada em milisegundos
+    rewind(arq); // volta o cursor para o inicio do arquivo
     while ((cliente = lerCliente(arq)) != NULL) {
-        contComparacao++;
+        contComparacao++; // enquanto nao e encontrada a chave dejada, e acrescentado o valor 1 a variavel
 
-        if (cliente->idC == chave) {
+        if (cliente->idC == chave) { //faz a comparação da chave desejada
             achou = 1;
             break;
         }
@@ -80,7 +80,7 @@ TCliente *buscaSequencial(int chave, FILE *arq, const char *nomeArquivoLog) {
     }
     fim = clock();
 
-    tempoGasto = ((double)(fim - inicio) * 1000) / CLOCKS_PER_SEC;
+    tempoGasto = ((double)(fim - inicio) * 1000) / CLOCKS_PER_SEC; // calcula o tempo gasto para encontrar a chave. CLOCKS_PER_SEC: responsável por armazenar a quantidade de pulsos por segundo do processador da máquina.
 
     // Escrevendo no arquivo de log
     fprintf(logFile, "Busca pela chave %d: Comparações = %d, Tempo = %f milissegundos\n", chave, contComparacao, tempoGasto);
@@ -96,7 +96,6 @@ TCliente *buscaSequencial(int chave, FILE *arq, const char *nomeArquivoLog) {
 
     return NULL;
 }
-
 
 
 void imprimeCliente(TCliente *cliente){
@@ -126,7 +125,7 @@ int vet[tam];
 
     for (int i=0;i<tam;i++){
         sprintf(nomeCliente, "Cliente %d " ,i+1);
-        cliente = criarCliente(vet[i], nomeCliente, "09/03/200", "15322132635","23254153");
+        cliente = criarCliente(vet[i], nomeCliente, "09/03/200", "15896375214","23254153");
         salvarCliente(cliente, arq);
     }
 
@@ -142,102 +141,26 @@ rewind(arq);
 
     free(cliente);
 }
-//Funcionario
-TFuncionario *criarFuncionario(int idF, char *nomeF, char *cpfF, double salarioF){
-
- TFuncionario *funcionario = (TFuncionario *) malloc(sizeof(TFuncionario));
-
-    if(funcionario) memset(funcionario, 0, sizeof(funcionario)); // memset( lugar que vai guardar a copia, o que vai ser copiado, n� de bytes que recebera a copia);
-        funcionario->idF = idF;
-        strcpy(funcionario->nomeF, nomeF);
-        strcpy(funcionario->cpfF, cpfF); //strcpy copia uma string para outra
-        funcionario->salarioF = salarioF;
-
-        return funcionario;
-}
-
-void salvarFuncionario(TFuncionario *funcionario, FILE *arq){
-    fwrite(&funcionario->idF, sizeof(int), 1, arq);
-    fwrite(funcionario->nomeF, sizeof(char), sizeof(funcionario->nomeF), arq); //fwrite(onde na memoria esta os dados, tamanho de unidade que vai salvar, total de dados que v�o ser gravados, arquivo onde vai salvar).
-    fwrite(funcionario->cpfF, sizeof(char), sizeof(funcionario->cpfF), arq);
-    fwrite(&funcionario->salarioF, sizeof(double), 1, arq);
-}
-
-TFuncionario *lerFuncionario(FILE *arq){
-  TFuncionario *funcionario = (TFuncionario *) malloc(sizeof(TFuncionario));
-
-     if (0 >= fread(&funcionario->idF, sizeof(int), 1, arq)) {
-        free(funcionario);
-        return NULL;
-    }
-    fread(funcionario->nomeF, sizeof(char), sizeof(funcionario->nomeF), arq);
-    fread(funcionario->cpfF, sizeof(char), sizeof(funcionario->cpfF), arq);
-    fread(&funcionario->salarioF, sizeof(double), 1, arq);
-
-    return funcionario;
-}
-
-void imprimeFuncionario(TFuncionario *funcionario){
-    printf("\n FUNCIONARIO \n");
-    printf("\nID do funcionario: ");
-    printf("%d", funcionario->idF);
-    printf("\nNome do funcionario: ");
-    printf("%s", funcionario->nomeF);
-    printf("\nCPF do funcionario: ");
-    printf("%s", funcionario->cpfF);
-    printf("\nSalario do funcionario: ");
-    printf("%4.2f", funcionario->salarioF);
-    printf("\n");
-
-}
-
-void criarBaseFuncionario(FILE *arq, int tam){
-
-int vet[tam];
-    TFuncionario *funcionario;
-
-    for(int i=0;i<tam;i++)
-        vet[i] = i+1;
-
-    shuffle(vet,tam,(tam*10)/100); // embaralhar
-
-    for (int i=0;i<tam;i++){
-        funcionario = criarFuncionario(vet[i], "Alex", "123511582", 2000);
-        salvarFuncionario(funcionario, arq);
-    }
-
-    free(funcionario);
-}
-
-void imprimirBaseFuncionario(FILE *arq){
-rewind(arq);
-    TFuncionario *funcionario;
-
-    while ((funcionario = lerFuncionario(arq)) != NULL)
-        imprimeFuncionario(funcionario);
-
-    free(funcionario);
-}
 
 //Dvd
 TDvd *criarDvd(int id_dvd, char *nome_dvd, char *genero, int emprestimo){
 
     TDvd *dvd = (TDvd *) malloc(sizeof(TDvd));
 
-    if(dvd) memset(dvd, 0, sizeof(dvd)); // memset( lugar que vai guardar a copia, o que vai ser copiado, n� de bytes que recebera a copia);
+    if(dvd) memset(dvd, 0, sizeof(dvd));
         dvd->id_dvd = id_dvd;
-        strcpy(dvd->nome_dvd, nome_dvd);//strcpy copia uma string para outra
+        strcpy(dvd->nome_dvd, nome_dvd);
         strcpy(dvd->genero, genero);
-        dvd->empretimo = emprestimo;
+        dvd->emprestimo = emprestimo;
 
         return dvd;
 }
 
 void salvarDvd(TDvd *dvd, FILE *arq){
      fwrite(&dvd->id_dvd, sizeof(int), 1, arq);
-     fwrite(dvd->nome_dvd, sizeof(char), sizeof(dvd->nome_dvd), arq); //fwrite(onde na memoria esta os dados, tamanho de unidade que vai salvar, total de dados que v�o ser gravados, arquivo onde vai salvar).
+     fwrite(dvd->nome_dvd, sizeof(char), sizeof(dvd->nome_dvd), arq);
      fwrite(dvd->genero, sizeof(char), sizeof(dvd->genero), arq);
-     fwrite(&dvd->empretimo, sizeof(int), 1, arq);
+     fwrite(&dvd->emprestimo, sizeof(int), 1, arq);
 }
 
 TDvd *lerDvd(FILE *arq){
@@ -249,7 +172,7 @@ TDvd *lerDvd(FILE *arq){
     }
     fread(dvd->nome_dvd, sizeof(char), sizeof(dvd->nome_dvd), arq);
     fread(dvd->genero, sizeof(char), sizeof(dvd->genero), arq);
-    fread(&dvd->empretimo, sizeof(int), 1, arq);
+    fread(&dvd->emprestimo, sizeof(int), 1, arq);
 
     return dvd;
 }
@@ -263,7 +186,7 @@ void imprimeDvd(TDvd *dvd){
     printf("\nGenero do dvd: ");
     printf("%s", dvd->genero);
     printf("\nSituacao do emprestimo: ");
-    printf("%d", dvd->empretimo);
+    printf("%d", dvd->emprestimo);
     printf("\n");
 }
 
@@ -337,11 +260,12 @@ TDvd *buscaSequencialDvds(int chave, FILE *arq, const char *nomeArquivoLog) {
 }
 
 //Locadora
-TLocadora *criarLocadora(int id_dvd, int id_cliente){
+TLocadora *criarLocadora(int id_locacao, int id_dvd, int id_cliente){
 
     TLocadora *locadora = (TLocadora *) malloc(sizeof(TLocadora));
 
-    if(locadora) memset(locadora, 0, sizeof(locadora)); // memset( lugar que vai guardar a copia, o que vai ser copiado, n� de bytes que recebera a copia);
+    if(locadora) memset(locadora, 0, sizeof(locadora));
+        locadora->id_locacao = id_locacao;
         locadora->id_dvd = id_dvd;
         locadora->id_cliente = id_cliente;
 
@@ -384,7 +308,7 @@ int vet[tam];
     shuffle(vet,tam,(tam*10)/100); // embaralhar
 
     for (int i=0;i<tam;i++){
-        locadora = criarLocadora(1,2);
+        locadora = criarLocadora(i,i++,i+2);
         salvarLocadora(locadora, arqLocadora);
     }
 
@@ -401,6 +325,37 @@ void imprimirBaseLocadora(FILE *arqLocadora){
     free(locadora);
 }
 
+
+TLocadora *buscaBinariaLocacao(int chave, FILE *in, int inicio, int fim) {
+
+        TLocadora *locadora = NULL;
+        int cod = -1;
+
+        while (inicio <= fim && cod != chave) {
+
+            int meio = trunc((inicio + fim) / 2);
+            //printf("Inicio: %d; Fim: %d; Meio: %d\n", inicio, fim, meio);
+            fseek(in, (meio -1) * tamanhoRegistroLocadora(), SEEK_SET);
+            locadora = lerRegistrosLocadora(in);
+            cod = locadora->id_locacao;
+
+            if (locadora) {
+                if (cod > chave) {
+                    fim = meio - 1;
+                } else {
+                    inicio = meio + 1;
+                }
+            }
+        }
+
+        if (cod == chave) {
+            return locadora;
+        }
+        else return NULL;
+}
+
+
+//Operacoes
 void dvdsDisponiveis(FILE *arq){
 
     TDvd *dvd;
@@ -408,7 +363,7 @@ void dvdsDisponiveis(FILE *arq){
     rewind(arq);
     while ((dvd = lerDvd(arq)) != NULL){
 
-        if(dvd->empretimo == 0 ){
+        if(dvd->emprestimo == 0 ){
             imprimeDvd(dvd);
         }
 
@@ -435,11 +390,12 @@ void alugaDvd(FILE *arqClientes, FILE *arqDvds, FILE *arqLocadora) {
     }
 
     do{
+    imprimirBaseCliente(arqClientes);
     printf("---------------------------------------------------------\n");
     printf("Digite o id do cliente que deseja alugar o DVD\n");
     scanf("%d", &idCliente);
 
-    cliente = buscaSequencial(idCliente, arqClientes, "clientes-log.txt");
+    cliente = buscaSequencialCliente(idCliente, arqClientes, "clientes-log.txt");
 
     dvdsDisponiveis(arqDvds);
 
@@ -453,11 +409,16 @@ void alugaDvd(FILE *arqClientes, FILE *arqDvds, FILE *arqLocadora) {
         printf("Dvd nao encontrado");
         exit(1);
     }
-        dvd->empretimo = 1;
+        dvd->emprestimo = 1;
         fseek(arqDvds, -sizeof(TDvd), SEEK_CUR);
         salvarDvd(dvd , arqDvds);
-        locadora = criarLocadora(idDvd, idCliente);
+        locadora = criarLocadora(tamanhoRegistroLocadora()+1, idDvd, idCliente);
         salvarLocadora(locadora, arqLocadora);
+
+        if(dvd->emprestimo == 1){
+            printf("\nNAO FOI POSSIVEL REALIZAR O EMPRESTIMO, O DVD JA ESTA ALUGADO\n");
+
+        }
 
     printf("\n*******************************************************\n");
     printf("DIGITE: 1 PARA ALUGAR MAIS FILMES \nDIGITE: 0 PARA SAIR ");
@@ -484,13 +445,100 @@ rewind(arq);
         dvd = buscaSequencialDvds(locadora->id_dvd, arqD, "buscaDvds-log.txt");
         imprimeDvd(dvd);
 
-        cliente = buscaSequencial(locadora->id_cliente, arqC, "clientes-log.txt");
+        cliente = buscaSequencialCliente(locadora->id_cliente, arqC, "clientes-log.txt");
         imprimeCliente(cliente);
     }
     free(locadora);
     free(cliente);
 }
 
+int excluiDvd(int chave, FILE *arqDvds) {
+    TDvd *dvd;
+    int encontrado = 0;
+
+    // Abre o arquivo original para leitura e gravação binária
+    if ((arqDvds = fopen("Dvds.dat", "r+")) == NULL) {
+        perror("Erro ao abrir o arquivo");
+        exit(1);
+    }
+
+    // Procura o registro pelo Id
+
+    while ((dvd = lerDvd(arqDvds)) != NULL) {
+        if (dvd->id_dvd == chave) {
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (encontrado) {
+        // Move o ponteiro do arquivo de volta para o início do registro
+        fseek(arqDvds, -sizeof(TDvd), SEEK_CUR);
+
+        // Preenche o registro com dados vazios
+        TDvd dvdVazio;
+        dvdVazio.id_dvd = 0;
+        strcpy(dvdVazio.nome_dvd, "");
+        strcpy(dvdVazio.genero, "");
+        dvdVazio.emprestimo = 0;
+
+        fwrite(&dvdVazio, sizeof(TDvd), 1, arqDvds);
+
+        printf("Dvd excluido com sucesso.\n");
+    } else {
+        printf("Dvd nao encontrado.\n");
+    }
+
+    fclose(arqDvds); // Fecha o arquivo
+    return 0; // Indica sucesso
+}
+int tamanhoRegistroLocadora() {
+        return sizeof(int)  //id_transacao
+               + sizeof(int) //id_dvd
+               + sizeof(int); //id_cliente
+}
+
+int tamanho_arquivo(FILE *arq) {
+        fseek(arq, 0, SEEK_END);
+        int tam = trunc(ftell(arq) / tamanhoRegistroLocadora());
+        return tam;
+}
+
+
+int excluiCliente(int chave, FILE *arqClientes) {
+    TCliente *cliente;
+    int encontrado = 0;
+
+    // Procura o registro pelo Id
+    while ((cliente = lerCliente(arqClientes)) != NULL) {
+            cliente = buscaSequencialCliente(chave, arqClientes,"clientes-log.txt");
+        if (cliente->idC == chave) {
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (encontrado == 1) {
+        // Move o ponteiro do arquivo para a posição correta
+        fseek(arqClientes, -sizeof(TCliente), SEEK_CUR);
+
+        // Preenche o registro com dados vazios
+        TCliente clienteVazio;
+        clienteVazio.idC = 0;
+        strcpy(clienteVazio.nomeC, "");
+        strcpy(clienteVazio.cpfC, "");
+        strcpy(clienteVazio.dataNascimentoC, "");
+        strcpy(clienteVazio.telefoneC, "");
+
+        fwrite(&clienteVazio, sizeof(TCliente), 1, arqClientes);
+
+        printf("Cliente excluido com sucesso.\n");
+    } else {
+        printf("Cliente nao encontrado.\n");
+    }
+
+    return 0; // Indica sucesso
+}
 
 
 
